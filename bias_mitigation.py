@@ -1,9 +1,10 @@
 # bias_mitigation.py
-# 
+# Contains frameworks and prompts for both analyzing and mitigating
+# bias in the chatbots responses. Requires an OpenAI API key currently.
 
 import openai
 import json
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 
 class BiasMitigationFramework:
     # Advanced bias detection and mitigation through reasoning

@@ -2,8 +2,6 @@
 # Contains the reasoning architecture for the chatbot, including data structures for 
 # current states and steps in the conversation, validating, and reasoning.
 
-import json
-import logging
 from typing import List, Dict, Tuple, Optional, Any
 from dataclasses import dataclass, field
 from enum import Enum
