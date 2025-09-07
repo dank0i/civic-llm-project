@@ -3,22 +3,36 @@
 # mitigations and reasonings, and formulating a final response.
 
 from reasoning_framework import ReasoningFramework, ConversationContext, ReasoningStep, ConversationState
-from bias_mitigation import BiasMitigationFramework, BiasDetector
+from bias_mitigation import BiasMitigationFramework, BiasDetector, PerspectiveAnalysisFramework
 from hallucination_prevention import HallucinationPreventer, UncertaintyCalibrator
 from boundary_management import ConversationalIntelligence, ConversationFlowManager
 from typing import List, Optional, Tuple
+import logging
+import asyncio
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class PoliticalChatbotAgent:
     def __init__(self, api_key: Optional[str] = None, tavily_key: Optional[str] = None):
         self.context = ConversationContext()
         self.reasoning = ReasoningFramework()
-        self.hallucination_preventer = HallucinationPreventer(api_key, tavily_key)
+        logger.info("Initialized agent with reasoning framework")
         
+        self.hallucination_preventer = HallucinationPreventer(api_key, tavily_key)
+        logger.info("Initialized with hallucination prevention")
+
+        self.conversational_intelligence = ConversationalIntelligence()
+        self.flow_manager = ConversationFlowManager()
+        self.perspective_framework = PerspectiveAnalysisFramework()
+
         if api_key:
             self.bias_detector = BiasDetector(api_key)
+            logger.info("Initialized bias mitigation framework")
         else:
             self.bias_detector = None
-    
+            logger.warning("No API key provided - bias mitigation unavailable")
+
     def create_reasoning_step(
         self, 
         step_type: str, 
@@ -31,11 +45,13 @@ class PoliticalChatbotAgent:
             confidence=confidence
         )
         self.context.reasoning_chain.append(step)
+        logger.info(f"Added reasoning step: {step_type} (confidence: {confidence})")
         return step
     
     def update_conversation_state(self, new_state: ConversationState):
         old_state = self.context.state
         self.context.state = new_state
+        logger.info(f"State transition: {old_state.value} -> {new_state.value}")
     
     def apply_bias_mitigation(self, response: str) -> Tuple[str, List[str]]:
         # Apply bias detection and mitigation to a response
@@ -99,6 +115,113 @@ class PoliticalChatbotAgent:
         )
         
         return final_response
+    
+    def handle_query(self, query: str, history: List) -> Optional[str]:
+        # Processes query with boundary management
+
+        # Semantic classification 
+        classification = self.conversational_intelligence.classify_request(
+            query, 
+            history
+        )
+        
+        # Record classification reasoning
+        self.create_reasoning_step(
+            "boundary_classification",
+            classification['reasoning'],
+            classification['confidence']
+        )
+        
+        # Handle based on classification
+        if not classification['in_scope']:
+            # Generate graceful redirect
+            redirect = self.conversational_intelligence.generate_graceful_redirect(
+                query,
+                classification
+            )
+            
+            # Track flow
+            self.flow_manager.update_flow_state(query, "redirect", False)
+            
+            # Add topic suggestions
+            suggestions = self.flow_manager.suggest_next_topics("general")
+            if redirect:
+                redirect += "\n\nSome topics you might find interesting:\n"
+                for s in suggestions:
+                    redirect += f"- {s}\n"
+            
+            return redirect
+        
+        # Check for conversation breakdown
+        if self.conversational_intelligence.detect_conversation_breakdown(history, query):
+            repair = self.conversational_intelligence.repair_conversation(
+                history,
+                "confusion"
+            )
+            self.flow_manager.update_flow_state(query, "repair", True)
+            return repair
+        
+        # Process normally if in scope
+        return None
+    
+    def maintain_conversation_context(self, message: str, response: str):
+        """Maintain conversation context and flow"""
+        self.context.message_history.append((message, response))
+        
+        # Track topics
+        if "election" in message.lower():
+            self.flow_manager.topic_tracking["election"] = \
+                self.flow_manager.topic_tracking.get("election", 0) + 1
+        if "policy" in message.lower():
+            self.flow_manager.topic_tracking["policy"] = \
+                self.flow_manager.topic_tracking.get("policy", 0) + 1
+        
+        # Update conversation state
+        if len(self.context.reasoning_chain) > 5:
+            self.context.state = ConversationState.POLITICAL_DISCUSSION
+    
+    async def process_message_async(self, message: str, history: List[Tuple[str, str]]) -> str:
+        # Completes async message processing with all components
+
+        # Boundary management
+        boundary_response = self.handle_query(message, history)
+        if boundary_response:
+            return boundary_response
+        
+        # Creates reasoning chain
+        reasoning_step = self.create_reasoning_step(
+            "query_analysis",
+            f"Analyzing query: {message}",
+            0.7
+        )
+        
+        # Updates state
+        self.update_conversation_state(ConversationState.POLITICAL_DISCUSSION)
+        
+        # Generates initial response
+        initial_response = f"Providing balanced analysis of: {message}"
+        
+        # Applies bias mitigation
+        if self.bias_detector:
+            mitigated_response, biases = self.apply_bias_mitigation(initial_response)
+            balanced_response = self.bias_detector.ensure_perspective_balance(message, mitigated_response)
+        else:
+            balanced_response = initial_response
+        
+        # Applies hallucination prevention
+        validated_response = await self.validate_and_ground_response(message, balanced_response)
+        
+        # Updates conversation context
+        self.maintain_conversation_context(message, validated_response)
+        
+        return validated_response
+    
+    def process_message(self, message: str, history: List[Tuple[str, str]]) -> str:
+        # Synchronous wrapper for message processing
+        if history is None:
+            history = []
+        return asyncio.run(self.process_message_async(message, history))
+
 
 if __name__ == "__main__":
     import os

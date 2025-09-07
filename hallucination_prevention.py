@@ -6,6 +6,10 @@ import aiohttp
 import json
 import openai
 from typing import Any, Dict, List, Optional
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class InformationValidator:
     # Reasoning-based information validation and hallucination prevention
@@ -41,6 +45,7 @@ class InformationValidator:
                             "answer": data.get("answer", "")
                         }
         except Exception as e:
+            logger.error(f"Search error: {e}")
             return {
                 "success": False,
                 "fallback": True
@@ -229,6 +234,7 @@ class HallucinationPreventer:
             return json.loads(response.choices[0].message.content)
             
         except Exception as e:
+            logger.error(f"Information gap analysis error: {e}")
             return {
                 "known_facts": [],
                 "unknown_aspects": ["Analysis failed"],

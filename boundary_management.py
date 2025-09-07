@@ -6,6 +6,10 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime
 import json
 import openai
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class BoundaryManagementFramework:
     # Intelligent scope management through reasoning
@@ -130,6 +134,7 @@ class ConversationalIntelligence:
             return json.loads(response.choices[0].message.content)
             
         except Exception as e:
+            logger.error(f"Semantic classification error: {e}")
             return {
                 "in_scope": True,
                 "confidence": 0.5,
@@ -204,27 +209,27 @@ class ConversationalIntelligence:
         """
         if issue_type == "confusion":
             return """
-I sense there might be some confusion. Let me clarify what I can help with:
+                I sense there might be some confusion. Let me clarify what I can help with:
 
-I'm specialized in providing balanced analysis of political events and policies. I can:
-- Explain recent political developments from multiple perspectives
-- Analyze policy proposals and their potential impacts
-- Discuss political history and constitutional matters
-- Present different viewpoints on controversial political topics
+                I'm specialized in providing balanced analysis of political events and policies. I can:
+                - Explain recent political developments from multiple perspectives
+                - Analyze policy proposals and their potential impacts
+                - Discuss political history and constitutional matters
+                - Present different viewpoints on controversial political topics
 
-Could you rephrase your question or let me know which political topic interests you?"""
+                Could you rephrase your question or let me know which political topic interests you?"""
         
         elif issue_type == "repetition":
             return """
-I notice we might be going in circles. Let me try a different approach.
+                I notice we might be going in circles. Let me try a different approach.
 
-What specific aspect of political events or policy would you like to explore? 
-For example:
-- A recent political development you'd like understood
-- A policy debate you want analyzed from different angles
-- A political process or system you'd like explained
+                What specific aspect of political events or policy would you like to explore? 
+                For example:
+                - A recent political development you'd like understood
+                - A policy debate you want analyzed from different angles
+                - A political process or system you'd like explained
 
-How can I best help you with political analysis today?"""
+                How can I best help you with political analysis today?"""
         
         return "Let me help you with political analysis. What would you like to know?"
 

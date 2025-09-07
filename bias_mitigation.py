@@ -5,6 +5,10 @@
 import openai
 import json
 from typing import List, Tuple
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class BiasMitigationFramework:
     # Advanced bias detection and mitigation through reasoning
@@ -102,6 +106,7 @@ class BiasDetector:
         openai.api_key = api_key
         self.bias_framework = BiasMitigationFramework()
         self.perspective_framework = PerspectiveAnalysisFramework()
+        logger.info("Initialized bias mitigation framework")
     
     def detect_mitigate_bias(self, text: str) -> Tuple[str, List[str]]:
         mitigation_prompt = f"""
@@ -145,6 +150,7 @@ class BiasDetector:
             return analysis['neutralized_response'], analysis['detected_biases']
             
         except Exception as e:
+            logger.error(f"Bias mitigation error: {e}")
             return text, []
     
     def ensure_perspective_balance(self, topic: str, initial_response: str) -> str:
