@@ -44,23 +44,23 @@ class ReasoningFramework:
     @staticmethod
     def get_information_validation_chain() -> str:
         return """
-        REASONING CHAIN FOR INFORMATION VALIDATION:
-        1. ASSESS CLAIM PLAUSIBILITY
+        Reasoning chain for information validation:
+        1. Assess claim responsibility:
            - Does this align with known political processes?
            - Are there logical inconsistencies?
            - What is the coherence score (0-1)?
         
-        2. IDENTIFY INFORMATION GAPS
+        2. Identify information and knowledge gaps:
            - What key facts are missing?
            - What context is needed for understanding?
            - What assumptions am I making?
         
-        3. QUANTIFY UNCERTAINTY
+        3. Quantify uncertainity appropraitely 
            - What is my confidence level for each claim?
            - Which parts require external validation?
            - How do I express appropriate uncertainty?
         
-        4. SYNTHESIZE WITH CAVEATS
+        4. Highlight caveats and knowledge gaps
            - Present verified information clearly
            - Acknowledge unverified claims explicitly
            - Provide reasoning for confidence levels
@@ -69,25 +69,25 @@ class ReasoningFramework:
     @staticmethod
     def get_perspective_taking_framework() -> str:
         return """
-        SYSTEMATIC PERSPECTIVE ANALYSIS FRAMEWORK:
-        1. IDENTIFY STAKEHOLDERS
+        Perspective analysis framework:
+        1. Identify major stakeholders:
            - Who are the primary actors?
            - What are their stated positions?
            - What are their underlying interests?
         
-        2. MAP VIEWPOINT DIMENSIONS
+        2. Map viewpoint and perspective dimensions:
            - Political ideology spectrum
            - Economic implications
            - Social/cultural considerations
            - Legal/constitutional aspects
            - Practical/implementation concerns
         
-        3. ANALYZE REASONING PATTERNS
+        3. Analyze sources and reasoning perspectives
            - What evidence does each side cite?
            - What are the logical foundations?
            - Where do interpretations diverge?
         
-        4. SYNTHESIZE BALANCED VIEW
+        4. Synthesize balanced view
            - Present each perspective fairly
            - Avoid false equivalences
            - Acknowledge complexity and nuance
@@ -96,71 +96,28 @@ class ReasoningFramework:
     @staticmethod
     def get_uncertainty_calibration_protocol() -> str:
         return """
-        CONFIDENCE CALIBRATION PROTOCOL:
-        1. INFORMATION SOURCE QUALITY
+        Confidence calibration protocol:
+        1. Analyze information source quality:
            - Primary sources: HIGH confidence (0.8-1.0)
            - Secondary analysis: MEDIUM confidence (0.5-0.8)
            - Speculation/inference: LOW confidence (0.2-0.5)
            - Unverified claims: MINIMAL confidence (0.0-0.2)
         
-        2. TEMPORAL RELEVANCE
+        2. Analyze temporal relevance:
            - Current (< 1 week): No degradation
            - Recent (1 week - 1 month): -0.1 confidence
            - Dated (1-6 months): -0.2 confidence
            - Historical (> 6 months): -0.3 confidence
         
-        3. CONSENSUS ASSESSMENT
+        3. Analyze consensus agreement:
            - Universal agreement: +0.2 confidence
            - Broad consensus: +0.1 confidence
            - Contested/debated: -0.1 confidence
            - Highly controversial: -0.2 confidence
         
-        4. EXPRESS UNCERTAINTY APPROPRIATELY
+        4. Express uncertainty appropriately:
            - High confidence: "Based on verified sources..."
            - Medium confidence: "Available evidence suggests..."
            - Low confidence: "While unconfirmed, some reports indicate..."
            - Minimal confidence: "I cannot verify this, but..."
         """
-
-class PoliticalChatbotAgent:
-    # Core agent with reasoning capabilities
-    def __init__(self):
-        self.context = ConversationContext()
-        self.reasoning = ReasoningFramework()
-    
-    def create_reasoning_step(
-        self, 
-        step_type: str, 
-        content: str, 
-        confidence: float = 0.5
-    ) -> ReasoningStep:
-        step = ReasoningStep(
-            step_type=step_type,
-            content=content,
-            confidence=confidence
-        )
-        self.context.reasoning_chain.append(step)
-        return step
-    
-    def update_conversation_state(self, new_state: ConversationState):
-        old_state = self.context.state
-        self.context.state = new_state
-
-if __name__ == "__main__":
-    # Basic test of reasoning framework
-    agent = PoliticalChatbotAgent()
-    
-    # Test reasoning step creation
-    step = agent.create_reasoning_step(
-        "information_validation",
-        "Testing basic reasoning chain creation",
-        0.75
-    )
-    
-    # Test to ensure program and structures initiate properly
-    print("Core Reasoning Architecture")
-    print(f"Created reasoning step: {step.step_type}")
-    print("Reasoning frameworks available:")
-    print("- Information Validation")
-    print("- Perspective Taking")
-    print("- Uncertainty Calibration")
