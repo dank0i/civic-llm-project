@@ -6,9 +6,11 @@ from reasoning_framework import ReasoningFramework, ConversationContext, Reasoni
 from bias_mitigation import BiasMitigationFramework, BiasDetector, PerspectiveAnalysisFramework
 from hallucination_prevention import HallucinationPreventer, UncertaintyCalibrator
 from boundary_management import ConversationalIntelligence, ConversationFlowManager
+from testing import ComprehensiveTestSuite
 from typing import List, Optional, Tuple
 import logging
 import asyncio
+import openai
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -163,23 +165,7 @@ class PoliticalChatbotAgent:
         
         # Process normally if in scope
         return None
-    
-    def maintain_conversation_context(self, message: str, response: str):
-        """Maintain conversation context and flow"""
-        self.context.message_history.append((message, response))
-        
-        # Track topics
-        if "election" in message.lower():
-            self.flow_manager.topic_tracking["election"] = \
-                self.flow_manager.topic_tracking.get("election", 0) + 1
-        if "policy" in message.lower():
-            self.flow_manager.topic_tracking["policy"] = \
-                self.flow_manager.topic_tracking.get("policy", 0) + 1
-        
-        # Update conversation state
-        if len(self.context.reasoning_chain) > 5:
-            self.context.state = ConversationState.POLITICAL_DISCUSSION
-    
+
     async def process_message_async(self, message: str, history: List[Tuple[str, str]]) -> str:
         # Completes async message processing with all components
 
@@ -199,7 +185,27 @@ class PoliticalChatbotAgent:
         self.update_conversation_state(ConversationState.POLITICAL_DISCUSSION)
         
         # Generates initial response
-        initial_response = f"Providing balanced analysis of: {message}"
+        try:
+            response = openai.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": """
+                     You are a political chatbot. Your response to the following message should focus 
+                     on fact, neutraility and balance, and reasoning for your conclusions. Avoid partisan framing,
+                     and consider multiple perspectives systematically, ensuring fairness. Acknowledge uncertainty when 
+                     information may be incomplete, contested, or evolving.
+                     """},
+                    {"role": "user", "content": message}
+                ],
+                temperature=0.3
+            )
+        except: 
+            response = ''
+            raise ValueError('Initial prompt connection failed.')
+            
+        initial_response = response.choices[0].message.content
+        if initial_response is None:
+            raise ValueError("Model returned no content")
         
         # Applies bias mitigation
         if self.bias_detector:
@@ -211,16 +217,13 @@ class PoliticalChatbotAgent:
         # Applies hallucination prevention
         validated_response = await self.validate_and_ground_response(message, balanced_response)
         
-        # Updates conversation context
-        self.maintain_conversation_context(message, validated_response)
-        
         return validated_response
     
-    def process_message(self, message: str, history: List[Tuple[str, str]]) -> str:
+    async def process_message(self, message: str, history: List[Tuple[str, str]]) -> str:
         # Synchronous wrapper for message processing
         if history is None:
             history = []
-        return asyncio.run(self.process_message_async(message, history))
+        return await self.process_message_async(message, history)
 
 
 if __name__ == "__main__":
@@ -231,30 +234,31 @@ if __name__ == "__main__":
     
     if api_key:
         agent = PoliticalChatbotAgent(api_key)
-
-        # Test reasoning step creation
-        step = agent.create_reasoning_step(
-            "information_validation",
-            "Testing basic reasoning chain creation",
-            0.75
-        )
-
-        # Test to ensure program and structures initiate properly
-        print("Core Reasoning Architecture")
-        print(f"Created reasoning step: {step.step_type}")
-        
-        # Test biased text
-        biased_text = "The radical left's policies are destroying the economy."
-        
-        print("Testing bias mitigation")
-        print(f"Original: {biased_text}")
-        
-        mitigated, biases = agent.apply_bias_mitigation(biased_text)
-        print(f"Mitigated: {mitigated}")
-        print(f"Detected biases: {biases}")
     else:
-        print("Set OPENAI_API_KEY to test bias mitigation")
-        print("Bias mitigation framework structure created")
+        agent = PoliticalChatbotAgent() 
+        print("Set OPENAI_API_KEY to test full suite ")
+        print("Framework structure created")
+
+    # Test reasoning step creation
+    step = agent.create_reasoning_step(
+        "information_validation",
+        "Testing basic reasoning chain creation",
+        0.75
+    )
+
+    # Test to ensure program and structures initiate properly
+    print("Core Reasoning Architecture")
+    print(f"Created reasoning step: {step.step_type}")
+        
+    # Test biased text
+    biased_text = "The radical left's policies are destroying the economy."
+        
+    print("Testing bias mitigation")
+    print(f"Original: {biased_text}")
+        
+    mitigated, biases = agent.apply_bias_mitigation(biased_text)
+    print(f"Mitigated: {mitigated}")
+    print(f"Detected biases: {biases}")
 
     print("Testing hallucination prevention framework")
     calibrator = UncertaintyCalibrator()
@@ -304,3 +308,18 @@ if __name__ == "__main__":
     
     print("Conversational Intelligence Framework initialized")
     print(f"Engagement Score: {flow_manager.engagement_score}")
+
+    print("Political chatbot testing framework")
+    
+    test_suite = ComprehensiveTestSuite(agent)
+        
+    print("Running test suite")
+    results = asyncio.run(test_suite.run_all_tests())
+        
+    print("Summary")
+    print(f"Total tests: {results['summary']['total_tests']}")
+    print(f"Passed: {results['summary']['passed_tests']}")
+    print(f"Pass rate: {results['summary']['pass_rate']:.1%}")
+    print(f"Average score: {results['summary']['average_score']:.2f}")
+        
+    print("Testing framework complete")
