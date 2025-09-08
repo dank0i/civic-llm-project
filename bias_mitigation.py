@@ -123,7 +123,7 @@ class BiasDetector:
         3. Loaded language or implications
         4. Missing viewpoints
         
-        Finally, provide an analysis in JSON:
+        Finally, you must ONLY provide a response that is an analysis in JSON:
         {{
             "detected_biases": ["list of reasoned bias detections"],
             "corrections_made": ["specific corrections applied"],
@@ -134,7 +134,7 @@ class BiasDetector:
         """
         
         try:
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {
@@ -145,8 +145,12 @@ class BiasDetector:
                 ],
                 temperature=0.2
             )
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("Model returned no content")
             
-            analysis = json.loads(response.choices[0].message.content)
+            print(content)
+            analysis = json.loads(content)
             return analysis['neutralized_response'], analysis['detected_biases']
             
         except Exception as e:
@@ -172,11 +176,13 @@ class BiasDetector:
         4. Are minority viewpoints acknowledged?
         
         If perspectives are missing, provide a balanced addition.
-        Finally, format as a JSON with 'analysis' and 'balanced_response'.
+        Finally, you must ONLY provide a response that is formatted as a JSON with ONLY 'analysis' and 'balanced_response'.
+        'balanced_response' must be either the original response with no changes, or a more balanced rendition of the response. 
+        Your analysis MUST be in 'analysis', and should not leak into the balanced response.
         """
         
         try:
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {
@@ -187,8 +193,12 @@ class BiasDetector:
                 ],
                 temperature=0.3
             )
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("Model returned no content")
             
-            result = json.loads(response.choices[0].message.content)
+            result = json.loads(content)
+            print(result)
             return result.get('balanced_response', initial_response)
             
         except Exception as e:

@@ -82,7 +82,7 @@ class InformationValidator:
            - Are motivations consistent with interests?
            - Do reactions match expected patterns?
         
-        Finally, provide an assessment as JSON:
+        Finally, you must ONLY provide a response that is an assessment as JSON:
         {{
             "coherence_score": float (0-1),
             "logical_issues": ["list of logical problems"],
@@ -215,11 +215,11 @@ class HallucinationPreventer:
            - Assign confidence to each claim
            - Identify sources of uncertainty
         
-        Return as a JSON with these categories.
+        You must ONLY provide a response that is a JSON with these categories.
         """
         
         try:
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {
@@ -230,8 +230,11 @@ class HallucinationPreventer:
                 ],
                 temperature=0.3
             )
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("Model returned no content")
             
-            return json.loads(response.choices[0].message.content)
+            return json.loads(content)
             
         except Exception as e:
             logger.error(f"Information gap analysis error: {e}")
@@ -285,14 +288,14 @@ class HallucinationPreventer:
         
         Do NOT use keyword matching. Use semantic understanding.
         
-        Finally, return JSON with just the claim texts:
+        Finally, you must ONLY provide a response that is JSON with just the claim texts:
         {{
             "claims": ["claim 1 text", "claim 2 text", ...]
         }}
         """
         
         try:
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are a claim identifier using reasoning, not pattern matching."},
@@ -300,8 +303,11 @@ class HallucinationPreventer:
                 ],
                 temperature=0.3
             )
-            
-            result = json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("Model returned no content")
+        
+            result = json.loads(content)
             return result.get("claims", [])
         except:
             sentences = text.split('. ')
@@ -339,11 +345,11 @@ class HallucinationPreventer:
         4. Temporal reasoning:
         - Is this about past (more certain) or future (less certain)?
         
-        Return just a confidence score between 0 and 1 as a number.
+        You must ONLY provide a response that is just a confidence score between 0 and 1 as a number.
         """
         
         try:
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": "Return only a confidence score between 0 and 1."},
@@ -351,9 +357,12 @@ class HallucinationPreventer:
                 ],
                 temperature=0.2
             )
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("Model returned no content")
             
             # Parse the response as a float
-            confidence_str = response.choices[0].message.content.strip()
+            confidence_str = content.strip()
             return float(confidence_str)
         except:
             return 0.5  # Default moderate confidence

@@ -111,7 +111,7 @@ class ConversationalIntelligence:
         4. Semantic categorization:
         - Based on meaning, what category is this?
         
-        Return JSON:
+        You must ONLY provide a JSON response that is returned as the following format:
         {{
             "in_scope": boolean,
             "confidence": float (0-1),
@@ -122,7 +122,7 @@ class ConversationalIntelligence:
         """
         
         try:
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are a semantic understanding system that reasons about meaning."},
@@ -130,8 +130,11 @@ class ConversationalIntelligence:
                 ],
                 temperature=0.3
             )
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("Model returned no content")
             
-            return json.loads(response.choices[0].message.content)
+            return json.loads(content)
             
         except Exception as e:
             logger.error(f"Semantic classification error: {e}")
@@ -180,9 +183,7 @@ class ConversationalIntelligence:
         return redirect_template
     
     def detect_conversation_breakdown(self, history: List, current_query: str) -> bool:
-        """
-        Detect when conversation is going off track
-        """
+        # Detects when conversation is going off track
         if len(history) < 2:
             return False
         
@@ -204,9 +205,8 @@ class ConversationalIntelligence:
         return any(signal in current_query.lower() for signal in confusion_signals)
     
     def repair_conversation(self, history: List, issue_type: str) -> str:
-        """
-        Generate conversation repair responses
-        """
+        # Generates conversation repair responses
+        
         if issue_type == "confusion":
             return """
                 I sense there might be some confusion. Let me clarify what I can help with:
