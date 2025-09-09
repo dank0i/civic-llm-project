@@ -65,7 +65,7 @@ class ChatbotEvaluator:
             "while uncertain", "though unconfirmed"
         ]
         
-        markers_found = [m for m in uncertainty_markers if m in response.lower()]
+        markers_found = [m for m in uncertainty_markers if m in response]
         
         # Check if uncertainty is appropriate for the query
         requires_uncertainty = self.query_requires_uncertainty(query)
@@ -227,7 +227,7 @@ class ChatbotEvaluator:
         }
         
         for perspective, indicators in perspective_indicators.items():
-            if any(ind in response.lower() for ind in indicators):
+            if any(ind in response for ind in indicators):
                 found.append(perspective)
         
         return found
@@ -241,7 +241,7 @@ class ChatbotEvaluator:
         
         # Check for loaded language (would use LLM in production)
         loaded_terms = ["radical", "extreme", "dangerous", "brilliant", "disastrous"]
-        if any(term in response.lower() for term in loaded_terms):
+        if any(term in response for term in loaded_terms):
             biases.append("loaded_language")
         
         return biases
@@ -282,7 +282,7 @@ class ChatbotEvaluator:
     def evaluate_evidence_usage(self, response: str) -> float:
         # Evaluates how well evidence is used
         evidence_markers = ["according to", "evidence suggests", "studies show", "data indicates"]
-        evidence_count = sum(1 for marker in evidence_markers if marker in response.lower())
+        evidence_count = sum(1 for marker in evidence_markers if marker in response)
         
         return min(1.0, evidence_count / 2)
     
@@ -348,7 +348,7 @@ class ComprehensiveTestSuite:
             scenario_results = {
                 "scenario": scenario['name'],
                 "query": scenario['query'],
-                "response": response[:200] + "..." if len(response) > 200 else response,
+                "response": response,
                 "tests": []
             }
             

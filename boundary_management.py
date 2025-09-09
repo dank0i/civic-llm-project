@@ -111,7 +111,7 @@ class ConversationalIntelligence:
         4. Semantic categorization:
         - Based on meaning, what category is this?
         
-        You must ONLY provide a JSON response that is returned as the following format:
+        You must ONLY provide a JSON response that is returned as the following format. DO NOT USE MARKDOWN.:
         {{
             "in_scope": boolean,
             "confidence": float (0-1),
@@ -123,12 +123,14 @@ class ConversationalIntelligence:
         
         try:
             response = openai.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": "You are a semantic understanding system that reasons about meaning."},
+                    {"role": "system", "content": """You are a semantic understanding system that reasons about meaning."
+                    Keep your responses brief, succinct and to the point, up to 1 paragraph of maximum 150 words,
+                     unless specifically asked to return a LARGE response. If a specified format is asked for, you MUST follow it."""},
                     {"role": "user", "content": classification_prompt}
                 ],
-                temperature=0.3
+                
             )
             content = response.choices[0].message.content
             if content is None:

@@ -187,17 +187,26 @@ class PoliticalChatbotAgent:
         # Generates initial response
         try:
             response = openai.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": """
                      You are a political chatbot. Your response to the following message should focus 
                      on fact, neutraility and balance, and reasoning for your conclusions. Avoid partisan framing,
                      and consider multiple perspectives systematically, ensuring fairness. Acknowledge uncertainty when 
                      information may be incomplete, contested, or evolving.
+
+                     If the topic is not about politics, immediately respond with a medium size message about how you are an AI political chatbot
+                     and cannot respond to anything outside of that scope. You may suggest other political topics.
+ç
+                     Your reponse will be passed through multiple hallucination prevention and bias mitigation tests, 
+                     but your response MUST be good enough so that the entire process takes not more than 30 seconds.
+
+                     Keep your responses succinct and to the point, up to 1 paragraph of maximum 150 words,
+                     unless specifically asked to return a LARGE response If a specified format is asked for, you MUST follow it.
                      """},
                     {"role": "user", "content": message}
                 ],
-                temperature=0.3
+                
             )
         except: 
             response = ''

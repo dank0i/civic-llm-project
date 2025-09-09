@@ -123,7 +123,7 @@ class BiasDetector:
         3. Loaded language or implications
         4. Missing viewpoints
         
-        Finally, you must ONLY provide a response that is an analysis in JSON:
+        Finally, you must ONLY provide a response that is an analysis in JSON, DO NOT USE MARKDOWN.:
         {{
             "detected_biases": ["list of reasoned bias detections"],
             "corrections_made": ["specific corrections applied"],
@@ -135,15 +135,17 @@ class BiasDetector:
         
         try:
             response = openai.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
                     {
                         "role": "system", 
-                        "content": "You are a bias detection system that uses reasoning, not keywords, in a political scenario, aiming for strict neutrality."
+                        "content": """You are a bias detection system that uses reasoning, not keywords, in a political scenario, aiming for strict neutrality."
+                        Keep your responses succinct and to the point, up to 1 or 2 paragraphs, preferably 1, 
+                     unless specifically asked to return a LARGE response. If a specified format is asked for, you MUST follow it."""
                     },
                     {"role": "user", "content": mitigation_prompt}
                 ],
-                temperature=0.2
+                
             )
             content = response.choices[0].message.content
             if content is None:
@@ -178,27 +180,29 @@ class BiasDetector:
         If perspectives are missing, provide a balanced addition.
         Finally, you must ONLY provide a response that is formatted as a JSON with ONLY 'analysis' and 'balanced_response'.
         'balanced_response' must be either the original response with no changes, or a more balanced rendition of the response. 
-        Your analysis MUST be in 'analysis', and should not leak into the balanced response.
+        Your analysis MUST be in 'analysis', and should not leak into the balanced response. DO NOT USE MARKDOWN.
         """
         
         try:
             response = openai.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a perspective balance analyzer using systematic frameworks, and must remain politcally neutral."
+                        "content": """You are a perspective balance analyzer using systematic frameworks, and must remain politcally neutral.
+                        Keep your responses succinct and to the point, up to 1 paragraph of maximum 150 words,
+                        unless specifically asked to return a LARGE response. If a specified format is asked for, you MUST follow it."""
                     },
                     {"role": "user", "content": balance_prompt}
                 ],
-                temperature=0.3
+                
             )
             content = response.choices[0].message.content
             if content is None:
                 raise ValueError("Model returned no content")
             
+            print(content)
             result = json.loads(content)
-            print(result)
             return result.get('balanced_response', initial_response)
             
         except Exception as e:

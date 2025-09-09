@@ -158,13 +158,13 @@ class UncertaintyCalibrator:
             suffix = ""
         elif confidence > 0.4:
             prefix = "While there is some uncertainty, "
-            suffix = " (though this should be verified)"
+            suffix = ""
         elif confidence > 0.2:
             prefix = "With limited confidence, it appears that "
-            suffix = " (this remains largely unconfirmed)"
+            suffix = ""
         else:
             prefix = "I cannot reliably confirm this, but "
-            suffix = " (please treat this as speculative)"
+            suffix = ""
         
         return f"{prefix}{statement}{suffix}"
 
@@ -215,20 +215,22 @@ class HallucinationPreventer:
            - Assign confidence to each claim
            - Identify sources of uncertainty
         
-        You must ONLY provide a response that is a JSON with these categories.
+        DO NOT USE MARKDOWN. You must ONLY provide a response that is a JSON with these categories.
         """
         
         try:
             response = openai.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are an information completeness analyzer, assigned to determine confidence scores for sources and facts."
+                        "content": """You are an information completeness analyzer, assigned to determine confidence scores for sources and facts.
+                        Keep your responses succinct and to the point, up to 1 paragraph of maximum 150 words,
+                        unless specifically asked to return a LARGE response. If a specified format is asked for, you MUST follow it."""
                     },
                     {"role": "user", "content": reasoning_prompt}
                 ],
-                temperature=0.3
+                
             )
             content = response.choices[0].message.content
             if content is None:
@@ -288,7 +290,7 @@ class HallucinationPreventer:
         
         Do NOT use keyword matching. Use semantic understanding.
         
-        Finally, you must ONLY provide a response that is JSON with just the claim texts:
+        DO NOT USE MARKDOWN. Finally, you must ONLY provide a response that is JSON with just the claim texts:
         {{
             "claims": ["claim 1 text", "claim 2 text", ...]
         }}
@@ -296,12 +298,14 @@ class HallucinationPreventer:
         
         try:
             response = openai.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": "You are a claim identifier using reasoning, not pattern matching."},
+                    {"role": "system", "content": """You are a claim identifier using reasoning, not pattern matching."
+                    Keep your responses succinct and to the point, up to 1 paragraph of maximum 150 words, 
+                     unless specifically asked to return a LARGE response. If a specified format is asked for, you MUST follow it."""},
                     {"role": "user", "content": extraction_prompt}
                 ],
-                temperature=0.3
+                
             )
             content = response.choices[0].message.content
             if content is None:
@@ -345,17 +349,17 @@ class HallucinationPreventer:
         4. Temporal reasoning:
         - Is this about past (more certain) or future (less certain)?
         
-        You must ONLY provide a response that is just a confidence score between 0 and 1 as a number.
+        DO NOT USE MARKDOWN. You must ONLY provide a response that is just a confidence score between 0 and 1 as a number.
         """
         
         try:
             response = openai.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "Return only a confidence score between 0 and 1."},
                     {"role": "user", "content": assessment_prompt}
                 ],
-                temperature=0.2
+                
             )
             content = response.choices[0].message.content
             if content is None:
