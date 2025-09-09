@@ -54,6 +54,11 @@ def create_gradio_interface(api_key: str, tavily_key: Optional[str] = None):
             - Intelligent reasoning chains for complex topics
             - Appropriate uncertainty expression
             - Semantic understanding
+
+            Responses may take up to 30-45 seconds, depending on the specificity of the prompt,
+            to ensure information quality and bias mitigation.
+
+            Simply enter your message below to start chatting.
             
             ---
             """

@@ -162,6 +162,9 @@ class UncertaintyCalibrator:
         elif confidence > 0.2:
             prefix = "With limited confidence, it appears that "
             suffix = ""
+        elif confidence == -1: # Out of political scope
+            prefix = ""
+            suffix = ""
         else:
             prefix = "I cannot reliably confirm this, but "
             suffix = ""
@@ -350,6 +353,7 @@ class HallucinationPreventer:
         - Is this about past (more certain) or future (less certain)?
         
         DO NOT USE MARKDOWN. You must ONLY provide a response that is just a confidence score between 0 and 1 as a number.
+        If the claim is not related to politics, return -1.
         """
         
         try:

@@ -111,7 +111,8 @@ class ConversationalIntelligence:
         4. Semantic categorization:
         - Based on meaning, what category is this?
         
-        You must ONLY provide a JSON response that is returned as the following format. DO NOT USE MARKDOWN.:
+        You must ONLY provide a JSON response that is returned as the following format. DO NOT USE MARKDOWN.
+        Your reasoning should be succinct (and somewhat brief - 150 words max):
         {{
             "in_scope": boolean,
             "confidence": float (0-1),

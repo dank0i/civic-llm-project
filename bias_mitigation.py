@@ -126,10 +126,7 @@ class BiasDetector:
         Finally, you must ONLY provide a response that is an analysis in JSON, DO NOT USE MARKDOWN.:
         {{
             "detected_biases": ["list of reasoned bias detections"],
-            "corrections_made": ["specific corrections applied"],
             "neutralized_response": "bias-corrected version",
-            "confidence_in_neutrality": float (0-1),
-            "reasoning": "explanation of bias detection reasoning"
         }}
         """
         
@@ -180,7 +177,7 @@ class BiasDetector:
         If perspectives are missing, provide a balanced addition.
         Finally, you must ONLY provide a response that is formatted as a JSON with ONLY 'analysis' and 'balanced_response'.
         'balanced_response' must be either the original response with no changes, or a more balanced rendition of the response. 
-        Your analysis MUST be in 'analysis', and should not leak into the balanced response. DO NOT USE MARKDOWN.
+        Your analysis MUST be in 'analysis', must be BRIEF, and should not leak into the balanced response. DO NOT USE MARKDOWN.
         """
         
         try:
