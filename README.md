@@ -35,3 +35,5 @@ $ export TAVILY_API_KEY = "your-key"
 
 Finally, run the program using `python main.py`.
 The web interface will open on `http://localhost:7860`.
+
+You may also run the program in testing mode to allow for additional logging, by running `python main.py --test`
